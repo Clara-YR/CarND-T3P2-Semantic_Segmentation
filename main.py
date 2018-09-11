@@ -119,7 +119,7 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
         batch_i = 0
         for img, gt_img in get_batches_fn(batch_size):
             batch_i += 1
-            print("Train Batch_{}".format(bathc_i))
+            print("Train Batch_{}".format(batch_i))
             feed_dict = {input_image: img, 
                          correct_label: gt_img}
             _, loss = sess.run([train_op, cross_entropy_loss], feed_dict=feed_dict)
