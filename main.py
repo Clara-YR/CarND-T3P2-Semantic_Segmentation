@@ -121,7 +121,8 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
             batch_i += 1
             print("Train Batch_{}".format(batch_i))
             feed_dict = {input_image: img, 
-                         correct_label: gt_img}
+                         correct_label: gt_img,
+                         learning_rate: 0.1}
             _, loss = sess.run([train_op, cross_entropy_loss], feed_dict=feed_dict)
         print("Epoch {} done.".format(e))
 
@@ -164,7 +165,7 @@ def run():
         print("`layers` called")
         # Build the TensorFLow Loss and Optimizer Operations
         correct_label_ = tf.placeholder(tf.float32, shape=None)
-        learning_rate_ = tf.placeholder(tf.float32, 0.01)
+        learning_rate_ = tf.placeholder(tf.float32)
         logits_, train_op_, cross_entropy_loss_ = optimize(nn_last_layer=layers_output_, 
                                                             correct_label=correct_label_, 
                                                             learning_rate=learning_rate_, 
