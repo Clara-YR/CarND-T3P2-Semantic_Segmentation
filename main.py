@@ -110,18 +110,20 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
     :param learning_rate: TF Placeholder for learning rate
     """
     # TODO: Implement function
-
-
     sess.run(tf.global_variables_initializer())
     print("Initializer Done.")
 
     for e in range(epochs):
         print("Epoch {} begin ...".format(e))
         # get batches
+        batch_i = 0
         for img, gt_img in get_batches_fn(batch_size):
+            batch_i += 1
+            print("Train Batch_{}".format(bathc_i))
             feed_dict = {input_image: img, 
                          correct_label: gt_img}
             _, loss = sess.run([train_op, cross_entropy_loss], feed_dict=feed_dict)
+        print("Epoch {} done.".format(e))
 
 tests.test_train_nn(train_nn)
 
@@ -162,9 +164,10 @@ def run():
         print("`layers` called")
         # Build the TensorFLow Loss and Optimizer Operations
         correct_label_ = tf.placeholder(tf.float32, shape=None)
+        learning_rate_ = tf.placeholder(tf.float32, 0.01)
         logits_, train_op_, cross_entropy_loss_ = optimize(nn_last_layer=layers_output_, 
                                                             correct_label=correct_label_, 
-                                                            learning_rate=0.1, 
+                                                            learning_rate=learning_rate_, 
                                                             num_classes=num_classes)
         print("`optimize` called")
 
@@ -178,10 +181,11 @@ def run():
                 input_image=input_image_,
                 correct_label=correct_label_, 
                 keep_prob=keep_prob_, 
-                learning_rate=0.1)
+                learning_rate=learning_rate_)
 
         # TODO: Save inference data using helper.save_inference_samples
         helper.save_inference_samples(runs_dir, data_dir, sess, image_shape, logits, keep_prob, input_image)
+        print("Save Inference Data Successfully.")
 
         # OPTIONAL: Apply the trained model to a video
 
