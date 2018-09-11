@@ -82,7 +82,7 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
     """
     # TODO: Implement function
     # Build the loss
-    logits = tf.reshape(nn_last_layers, (-1, num_classes))
+    logits = tf.reshape(nn_last_layer, (-1, num_classes))
     cross_entropy_loss = tf.nn.softmax_cross_entropy_with_logits(labels=correct_label, logits=logits)
     cost = tf.reduce_mean(cross_entropy_loss)
     
@@ -110,15 +110,19 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
     :param learning_rate: TF Placeholder for learning rate
     """
     # TODO: Implement function
+
+
     sess.run(tf.global_variables_initializer())
     print("Initializer Done.")
+
     for e in range(epochs):
         print("Epoch {} begin ...".format(e))
         # get batches
-        for image, gt_image in get_batches_fn(batch_size):
-            feed_dict = {input_image: image, 
-                         correct_label: gt_image}
+        for img, gt_img in get_batches_fn(batch_size):
+            feed_dict = {input_image: img, 
+                         correct_label: gt_img}
             _, loss = sess.run([train_op, cross_entropy_loss], feed_dict=feed_dict)
+
 tests.test_train_nn(train_nn)
 
 
@@ -146,13 +150,35 @@ def run():
         #  https://datascience.stackexchange.com/questions/5224/how-to-prepare-augment-images-for-neural-network
 
         # TODO: Build NN using load_vgg, layers, and optimize function
-        input_image, keep_prob, layer3_out, layer4_out, layer7_out = load_vgg(sess, vgg_path)
-        nn_last_layers = layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes)
-        logits, train_op, cross_entropy_loss = optimize(nn_last_layers, correct_label, learning_rate, num_classes)
+
+        # Load pretrained vgg model & data
+        input_image_, keep_prob_, layer3_out_, layer4_out_, layer7_out_ = load_vgg(sess, vgg_path)
+        print("`load_vgg` called")
+        # Create Fully Convolutional Network
+        layers_output_ = layers(vgg_layer3_out=layer3_out_, 
+                                vgg_layer4_out=layer4_out_, 
+                                vgg_layer7_out=layer7_out_, 
+                                num_classes=num_classes)
+        print("`layers` called")
+        # Build the TensorFLow Loss and Optimizer Operations
+        correct_label_ = tf.placeholder(tf.float32, shape=None)
+        logits_, train_op_, cross_entropy_loss_ = optimize(nn_last_layer=layers_output_, 
+                                                            correct_label=correct_label_, 
+                                                            learning_rate=0.1, 
+                                                            num_classes=num_classes)
+        print("`optimize` called")
 
         # TODO: Train NN using the train_nn function
-        train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_loss, input_image,
-                    correct_label, keep_prob, learning_rate)
+        train_nn(sess, 
+                epochs=2, 
+                batch_size=5, 
+                get_batches_fn=get_batches_fn, 
+                train_op=train_op_, 
+                cross_entropy_loss=cross_entropy_loss_, 
+                input_image=input_image_,
+                correct_label=correct_label_, 
+                keep_prob=keep_prob_, 
+                learning_rate=0.1)
 
         # TODO: Save inference data using helper.save_inference_samples
         helper.save_inference_samples(runs_dir, data_dir, sess, image_shape, logits, keep_prob, input_image)
