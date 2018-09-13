@@ -5,6 +5,7 @@ import helper
 import warnings
 from distutils.version import LooseVersion
 import project_tests as tests
+from progressbar import ProgressBar
 
 
 # Check TensorFlow Version
@@ -153,17 +154,25 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
     print("Initializer Done.")
 
     for e in range(epochs):
-        print("Epoch {} begin ...".format(e))
-        # get batches
-        for image, label in get_batches_fn(batch_size):
-            # create feed dictionary
-            feed_dict = {input_image: image, 
-                         correct_label: label,
-                         keep_prob: 0.8,
-                         learning_rate: 0.1}
-            # define loss
-            _, loss = sess.run([train_op, cross_entropy_loss], feed_dict=feed_dict)
-        print("Epoch {} done.".format(e))
+    	print("Epoch {}/{} Begin ...".format(e+1, epochs))
+    	# build a progress bar
+    	bar = ProgressBar(maxval=30)
+    	bar.start()
+    	batch_i = 0
+
+    	for image, label in get_batches_fn(batch_size):
+        	# create feed dictionary
+	        feed_dict = {input_image: image, 
+	                     correct_label: label,
+	                     keep_prob: 0.8,
+	                     learning_rate: 0.1}
+	        # define loss
+	        _, loss = sess.run([train_op, cross_entropy_loss], feed_dict=feed_dict)
+	        # update progress bar
+	        batch_i += 1
+	        bar.update(batch_i)
+    	bar.finish()
+    	print("Epoch {} done.".format(e+1))
 
 tests.test_train_nn(train_nn)
 
@@ -171,7 +180,7 @@ tests.test_train_nn(train_nn)
 def run():
     num_classes = 2
     image_shape = (160, 576)
-    data_dir = './data'
+    data_dir = './data/data_road/training'
     runs_dir = './runs'
     tests.test_for_kitti_dataset(data_dir)
 
@@ -192,16 +201,15 @@ def run():
         #  https://datascience.stackexchange.com/questions/5224/how-to-prepare-augment-images-for-neural-network
 
         # TODO: Build NN using load_vgg, layers, and optimize function
-
         # Load pretrained vgg model & data
         input_image_, keep_prob_, layer3_out_, layer4_out_, layer7_out_ = load_vgg(sess, vgg_path)
-        print("`load_vgg` called")
+        print("Load Pre-trained VGG Successfully.")
         # Create Fully Convolutional Network
         layers_output_ = layers(vgg_layer3_out=layer3_out_, 
                                 vgg_layer4_out=layer4_out_, 
                                 vgg_layer7_out=layer7_out_, 
                                 num_classes=num_classes)
-        print("`layers` called")
+        print("Create FCN Successfully.")
         # Build the TensorFLow Loss and Optimizer Operations
         correct_label_ = tf.placeholder(tf.float32, shape=None)
         learning_rate_ = tf.placeholder(tf.float32)
@@ -209,12 +217,13 @@ def run():
                                                             correct_label=correct_label_, 
                                                             learning_rate=learning_rate_, 
                                                             num_classes=num_classes)
-        print("`optimize` called")
+        print("Optimizer Has Been Built")
 
         # TODO: Train NN using the train_nn function
+        print("Train the Neural Network ...")
         train_nn(sess, 
-                epochs=2, 
-                batch_size=5, 
+                epochs=6, 
+                batch_size=10, 
                 get_batches_fn=get_batches_fn, 
                 train_op=train_op_, 
                 cross_entropy_loss=cross_entropy_loss_, 
@@ -222,6 +231,7 @@ def run():
                 correct_label=correct_label_, 
                 keep_prob=keep_prob_, 
                 learning_rate=learning_rate_)
+        print("Finish Training.")
 
         # TODO: Save inference data using helper.save_inference_samples
         helper.save_inference_samples(runs_dir, data_dir, sess, image_shape, logits, keep_prob, input_image)
