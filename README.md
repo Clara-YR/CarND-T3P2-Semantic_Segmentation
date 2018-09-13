@@ -2,7 +2,7 @@
 [image0]: ./readme_images/save&load_model.png "how to load model"
 [image1]: ./readme_images/vgg_model.png "vgg 16 model structure"
 [image2]: ./readme_images/vgg_layers.png "vgg 16 model structure"
-
+[image3]: ./readme_images/Segmentation_Architecture.png "vgg 16 model structure"
 
 
 # Semantic Segmentation
@@ -61,8 +61,11 @@ Additional material: [transfer learning](https://github.com/udacity/deep-learnin
 
 _This part depicts how the project learns the correct features from the images._
 
+### <font color="green"> 1.2.1 Segmentation Architecturein</font>
 
-### <font color="green"> Implement FCN-8 in Function `layers`</font>
+![alt text][image3]
+
+### <font color="green"> 1.2.2 Implement FCN-8 in `layers`</font>
 
 __Reference links__:
 
@@ -70,6 +73,11 @@ __Reference links__:
 - [`tf.layers.conv2d_transpose()`](https://www.tensorflow.org/api_docs/python/tf/layers/conv2d_transpose)
 - [`tf.layers.dense()`](https://www.tensorflow.org/api_docs/python/tf/layers/dense)
 - [`tf.add()`](https://www.tensorflow.org/api_docs/python/tf/add)
+
+|    |Encoder|1x1 conv|Decoder|
+|:--:|:-----:|:------:|:-----:|
+|structure|pre-trained vgg|use `l2_regularizer`|transpose convolution|
+|function|extract features|preserve special indormation|up-sample|
 
 #### <font color="green">(1) FCN - Encoder</font>
 
