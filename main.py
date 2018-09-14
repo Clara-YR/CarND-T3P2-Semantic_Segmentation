@@ -6,6 +6,7 @@ import warnings
 from distutils.version import LooseVersion
 import project_tests as tests
 from progressbar import ProgressBar
+from glob import glob
 
 
 # Check TensorFlow Version
@@ -135,7 +136,7 @@ tests.test_optimize(optimize)
 
 
 def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_loss, input_image,
-             correct_label, keep_prob, learning_rate):
+             correct_label, keep_prob, learning_rate, progressbar=[False,None]):
     """
     Train neural network and print out the loss during training.
     :param sess: TF Session
@@ -151,14 +152,17 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
     """
     # TODO: Implement function
     sess.run(tf.global_variables_initializer())
-    print("Initializer Done.")
+    print("Global Variables Initializer Done. Set Epochs = {}, Batch_Size = {}".format(epochs, batch_size))
 
     for e in range(epochs):
     	print("Epoch {}/{} Begin ...".format(e+1, epochs))
     	# build a progress bar
-    	bar = ProgressBar(maxval=30)
-    	bar.start()
-    	batch_i = 0
+    	if(progressbar[0]):
+    		image_paths = glob(os.path.join(progressbar[1], 'image_2', '*.png'))
+    		num_batches = len(image_paths) // batch_size + 1
+    		bar = ProgressBar(maxval=num_batches)
+    		bar.start()
+    		batch_i = 0
 
     	for image, label in get_batches_fn(batch_size):
         	# create feed dictionary
@@ -169,10 +173,12 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
 	        # define loss
 	        _, loss = sess.run([train_op, cross_entropy_loss], feed_dict=feed_dict)
 	        # update progress bar
-	        batch_i += 1
-	        bar.update(batch_i)
-    	bar.finish()
-    	print("Epoch {} done.".format(e+1))
+	        if(progressbar[0]):
+	        	batch_i += 1
+	        	bar.update(batch_i)
+    	if(progressbar[0]):
+    		bar.finish()
+    	print("Epoch {}/{} Done!".format(e+1, epochs))
 
 tests.test_train_nn(train_nn)
 
@@ -230,11 +236,13 @@ def run():
                 input_image=input_image_,
                 correct_label=correct_label_, 
                 keep_prob=keep_prob_, 
-                learning_rate=learning_rate_)
+                learning_rate=learning_rate_,
+                progressbar=[True, './data/data_road/training'])
         print("Finish Training.")
 
         # TODO: Save inference data using helper.save_inference_samples
-        helper.save_inference_samples(runs_dir, data_dir, sess, image_shape, logits, keep_prob, input_image)
+        helper.save_inference_samples(runs_dir, data_dir, sess, image_shape, 
+    								logits=logits_, keep_prob=keep_prob_, input_image=input_image_)
         print("Save Inference Data Successfully.")
 
         # OPTIONAL: Apply the trained model to a video
