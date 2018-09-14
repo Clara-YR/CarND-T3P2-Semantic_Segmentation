@@ -3,7 +3,8 @@
 [image1]: ./readme_images/vgg_model.png "vgg 16 model structure"
 [image2]: ./readme_images/vgg_layers.png "vgg 16 model structure"
 [image3]: ./readme_images/Segmentation_Architecture.png "vgg 16 model structure"
-
+[image4]: ./readme_images/run.png "python main.py output"
+[image5]: ./readme_images/regularizer.png "no regularizer v.s. regularizer"
 
 # Semantic Segmentation
 
@@ -64,6 +65,31 @@ _This part depicts how the project learns the correct features from the images._
 ### <font color="green"> 1.2.1 Segmentation Architecturein</font>
 
 ![alt text][image3]
+
+**Pseudocode**
+
+- 1x1 Convolution
+- Deconvolution
+	- up-sample by 2(use <b style='color:green'>regularizer</b>)
+	- combine current and previous pool4 outputs
+	- up-sample by 2 again(use <b style='color:green'>regularizer</b>)
+	- combine current and previous pool3 outputs
+	- up-sample by 8(use <b style='color:green'>regularizer</b>)
+- return layers output	
+
+**Regularizer**
+
+The upper and uder images displays the training output with and without using regularizer respectively.
+![alt text][image5]
+If we don't use regularizer:
+ 
+ - weights will become too large
+ - the NN is prone to overfitting and producing garbage
+
+**Padding**
+
+Set all paddings as `same` since we want teh same exact size as the output.
+
 
 ### <font color="green"> 1.2.2 Implement FCN-8 in `layers`</font>
 
@@ -154,6 +180,16 @@ _The loss of the network should be printed while the network is training._
 
 ### <font color="green">1.4.1 Function `train_nn`</font>
 
+I add a parameter `progressbar` in order to display the progress of each epoch when training.
+
+**Pseudocode**
+
+- Initialize
+- For each epoch
+	- Get batches, for each batch
+		- Feed dictionay
+		- Run optimizer
+
 
 # <font color="purple">2. Train the Neural Network</font>
 _This part depicts how sthe project trains the neural network._
@@ -161,13 +197,32 @@ _This part depicts how sthe project trains the neural network._
 ## <font color="purple">2.1 Hyperparameters</font>
 _The number of epoch and batch size are set to a reasonable number._
 
-## <font color="purple">2.2 Label the Road</font>
-_The project labels most pixels of roads close to the best solution. The model doesn't have to predict correctly all the images, just most of them._
+I set the parameters as below:
 
-_A solution that is close to best would label at least 80% of the road and label no more than 20% of non-road pixels as road._
+- __learning rate = 0.1__  (line 173)
+- __keep probability = 0.8__  (line 172)
+- __epochs = 6__  (line 232)
+- __batch size = 10__  (line 233)
 
 
-others:
+## <font color="purple">2.2 Function 'run'</font>
+
+**Pseudocode**
+
+- Implement the functions created above in order:
+	- `load_vgg`
+	- `layers`
+	- `optimize`
+	- `train_nn`
+- Save the training output via `helper.save_inference_samples`
+
+My output shown as below:
+![alt text][image4]
+
+
+
+
+Other Syntax Redeference:
 
 - [`tqdm`](https://pypi.python.org/pypi/tqdm) - A fast, extensible progress bar for Python and CLI 
 - [`urllib.urlretrieve(url[, filename[, reporthook[, data]]])`](https://docs.python.org/2/library/urllib.html?highlight=urlretrieve#urllib.urlretrieve)
